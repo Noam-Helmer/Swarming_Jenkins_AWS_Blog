@@ -78,7 +78,7 @@ class SqsInstance extends AwsService implements Serializable {
      * Output format is available at https://docs.aws.amazon.com/cli/latest/reference/sqs/receive-message.html
      */
     Map receiveMessage(Integer maxNumberOfMessages, Integer visibilityTimeout = 30) {
-        script.println "Receiving maximum $maxNumberOfMessages from queue $queueUrl"
+        println "Receiving maximum $maxNumberOfMessages from queue $queueUrl"
         assert maxNumberOfMessages >= 1 && maxNumberOfMessages <= 10 : "Invalid number of messages: $maxNumberOfMessages. Valid values: 1 to 10"
 
         // Receive the queue messages
@@ -86,7 +86,7 @@ class SqsInstance extends AwsService implements Serializable {
                                             --max-number-of-messages $maxNumberOfMessages --visibility-timeout $visibilityTimeout")
         // Read the command output
         Map messageInfo = script.readJSON text: messagesJson
-        script.println "Recived messagese infromation: $messageInfo"
+        println "Recived messagese infromation: $messageInfo"
         return messageInfo
     }
 
@@ -99,7 +99,7 @@ class SqsInstance extends AwsService implements Serializable {
      * @param receiptHandle The receipt handle associated with the message to delete.
      */
     void deleteMessage(String receiptHandle){
-        script.println "Deleting message with receipt handle: $receiptHandle"
+        println "Deleting message with receipt handle: $receiptHandle"
         runApiCommand('delete-message', "--receipt-handle $receiptHandle")
     }
 
@@ -110,7 +110,7 @@ class SqsInstance extends AwsService implements Serializable {
      * Messages sent to the queue after you call PurgeQueue might be deleted while the queue is being purged.
      */
     void purgeQueue(){
-        script.println "Purgeing queue: $queueUrl"
+        println "Purgeing queue: $queueUrl"
         runApiCommand('purge-queue')
     }
 
@@ -126,7 +126,7 @@ class SqsInstance extends AwsService implements Serializable {
      * @return The message Id of the sent message
      */
     String sendStringMessage(String body, Map messageAttributes, Integer delaySeconds = 0){
-        script.println "Sending message to queue: $queueUrl"
+        println "Sending message to queue: $queueUrl"
 
         // Create the attributes argument
         List attributesList = messageAttributes.collect { /${it.key}=StringValue=${it.value},DataType=string/ }.join ","
@@ -137,9 +137,9 @@ class SqsInstance extends AwsService implements Serializable {
 
         // Read the command output
         Map messageInfo = script.readJSON text: messageJson
-        script.println "Sent message info: $messageInfo"
+        println "Sent message info: $messageInfo"
         String messageId = messageInfo['MessageId']
-        script.println "Message ID of the sent message: $messageId"
+        println "Message ID of the sent message: $messageId"
         return messageId
     }
 }

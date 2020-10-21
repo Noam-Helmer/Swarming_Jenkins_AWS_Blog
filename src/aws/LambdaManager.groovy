@@ -63,18 +63,18 @@ class LambdaManager extends AwsService implements Serializable {
         }
 
         if(functionName || eventSourceArn) {
-            script.println "Retrieving all event source mappings that match:\n" +
+            println "Retrieving all event source mappings that match:\n" +
                     "Function Name/ARN: ${functionName ?: 'All'}\nEvent Source ARN: ${eventSourceArn ?: 'ALL'}"
         }
         else {
-            script.println "Retrieving all event source mappings in the ${this.region} region"
+            println "Retrieving all event source mappings in the ${this.region} region"
         }
 
         // Retrieve the mappings
         String output = runApiCommand('list-event-source-mappings', cmdArgs)
         // Read the command output
         Map eventMappings = script.readJSON text: output
-        script.println "Event Source Mappings: ${eventMappings.EventSourceMappings}"
+        println "Event Source Mappings: ${eventMappings.EventSourceMappings}"
         return eventMappings.EventSourceMappings
     }
 
@@ -108,9 +108,9 @@ class LambdaManager extends AwsService implements Serializable {
         String cmdArg = enabled ? "--enabled" : "--no-enabled"
 
         // Update the trigger state
-        script.println "Setting trigger with UUID: $uuid to state '$expectedState'"
+        println "Setting trigger with UUID: $uuid to state '$expectedState'"
         String output = runApiCommand('update-event-source-mapping', " --uuid $uuid $cmdArg")
-        script.println "Output from update event command: $output"
+        println "Output from update event command: $output"
 
         // Extract parameters from update command output
         Map eventSource = script.readJSON text: output
@@ -119,7 +119,7 @@ class LambdaManager extends AwsService implements Serializable {
         // Query the trigger until it reaches desired state or timeout
         long timeoutExpiredSeconds = System.currentTimeSeconds() + timeoutSeconds
         while (System.currentTimeSeconds() <= timeoutExpiredSeconds && currentState != expectedState) {
-            script.println "Current trigger state is: $currentState\nCheck trigger state again in $waitIntervalSeconds seconds..."
+            println "Current trigger state is: $currentState\nCheck trigger state again in $waitIntervalSeconds seconds..."
             script.sleep(waitIntervalSeconds)
             // Query the trigger again to get the updated state
             output = runApiCommand('get-event-source-mapping', " --uuid $uuid")
@@ -130,7 +130,7 @@ class LambdaManager extends AwsService implements Serializable {
             // Throw an AbortException and notify the pipeline that an error has occurred
             script.error("Trigger is in state '$currentState' after $timeoutSeconds seconds while it is expected to be in state $expectedState")
         }
-        script.println "Trigger has reached the desired state: $currentState"
+        println "Trigger has reached the desired state: $currentState"
     }
 
     /**

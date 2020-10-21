@@ -57,7 +57,7 @@ class Ec2Manager extends AwsService implements Serializable {
      * @param instanceIds List of Instance IDs
      */
     void stopInstances(List instanceIds) {
-        script.println "Stopping EC2 instances with ids: $instanceIds"
+        println "Stopping EC2 instances with ids: $instanceIds"
         runApiCommand('stop-instances', "--instance-ids ${instanceIds.join(' ')}")
     }
 
@@ -70,7 +70,7 @@ class Ec2Manager extends AwsService implements Serializable {
      * @param instanceIds List of Instance IDs
      */
     void terminateInstances(List instanceIds) {
-        script.println "Terminating EC2 instances with ids: $instanceIds"
+        println "Terminating EC2 instances with ids: $instanceIds"
         runApiCommand('terminate-instances', "--instance-ids ${instanceIds.join(' ')}")
     }
 
@@ -82,7 +82,7 @@ class Ec2Manager extends AwsService implements Serializable {
      * @param instanceIds List of Instance IDs
      */
     void rebootInstances(List instanceIds) {
-        script.println "Rebooting EC2 instances with ids: $instanceIds"
+        println "Rebooting EC2 instances with ids: $instanceIds"
         runApiCommand('reboot-instances', "--instance-ids ${instanceIds.join(' ')}")
     }
 
@@ -111,7 +111,7 @@ class Ec2Manager extends AwsService implements Serializable {
      * @param tags Map of tags, the key represents the tag key and the value represents and optional tag value
      */
     void tagResource(String resourceId, Map tags) {
-        script.println "Tagging resource with id ${resourceId} with the following tags: ${tags}"
+        println "Tagging resource with id ${resourceId} with the following tags: ${tags}"
         def tagsCommand = tags.collect { /$it.key="$it.value"/ }.join " "
         runApiCommand('create-tags', "--resources $resourceId --tags ${toKeyValue(tags)}")
     }
@@ -131,7 +131,7 @@ class Ec2Manager extends AwsService implements Serializable {
      * @return The instance Id of the deployed instance
      */
     String launchInstance(String amiId, String KeyPair, String type, String name, Map tags, List securityGroups, String userDataFile = null) {
-        script.println "Deploying EC2 $type instance from ami '$amiId'"
+        println "Deploying EC2 $type instance from ami '$amiId'"
         String userDataFlag = userDataFile ? "--user-data file://$userDataFile " : ''
 
         // Create the tags argument
@@ -147,9 +147,9 @@ class Ec2Manager extends AwsService implements Serializable {
                                             $userDataFlag--security-group-ids ${securityGroups.join(' ')} --tag-specifications $tagsCommand$tTypeConfig")
         // Read the command output
         Map instanceInfo = script.readJSON text: instanceJson
-        script.println "New instance infromation: $instanceInfo"
+        println "New instance information: $instanceInfo"
         String instanceId = instanceInfo['Instances']['InstanceId'][0]
-        script.println "Instance ID of the new deployed instance: $instanceId"
+        println "Instance ID of the new deployed instance: $instanceId"
         return instanceId
     }
 
@@ -168,8 +168,8 @@ class Ec2Manager extends AwsService implements Serializable {
      * @param swarmClientFolder The folder in which the swarm-client.jar resides. Example: C:\Swarm
      * @return The instance id of the deployed instance
      */
-    String launchSwarmInstance(String amiId, String KeyPair, String type, String name, Map tags, List securityGroups, String swarmCredentialsId, String swarmClientPath = 'C:\\Swarm') {
-        script.println "Deploying an EC2 Jenkins SWARM instance named: $name"
+    String launchSwarmInstance(String amiId, String KeyPair, String type, String name, Map tags, List securityGroups, String swarmCredentialsId, String swarmClientFolder = /C:\Swarm\swarm-client.jar/) {
+        println "Deploying an EC2 Jenkins SWARM instance named: $name"
         assert !name.contains(' '): "ERROR - Instance deployment failed, Swarm instance name cannot contain whitespaces"
         String userDataFileName = "${name}_userData.txt"
 
@@ -177,7 +177,7 @@ class Ec2Manager extends AwsService implements Serializable {
         script.withCredentials([script.usernamePassword(credentialsId: swarmCredentialsId, usernameVariable: 'SWARM_USER', passwordVariable: 'SWARM_PASS')]) {
             String userData = """\
 <script>
-echo java.exe -jar $swarmClientFolder\\swarm-client.jar -master $script.env.JENKINS_URL -username $script.env.SWARM_USER -password $script.env.SWARM_PASS -labels $name -name $name -disableClientsUniqueId -mode exclusive -executors 1 -fsroot C:\\Jenkins > $swarmClientFolder\\swarm-client.cmd
+java.exe -jar $swarmClientFolder -master $script.env.JENKINS_URL -username $script.env.SWARM_USER -password $script.env.SWARM_PASS -labels $name -name $name -disableClientsUniqueId -mode exclusive -executors 1 -fsroot C:\\Jenkins
 </script>"""
             // Create the user data file
             script.writeFile(file: userDataFileName, text: userData)
