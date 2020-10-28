@@ -17,17 +17,16 @@ class Ec2Manager extends AwsService implements Serializable {
      * Otherwise, all usage above baseline is billed. Therefore this feature will be turned off by default.
      * <strong>This configuration is relevant only for instance types from the T2 or T3 family</strong>
      */
-    public Boolean CpuCredits = false
+    Boolean CpuCredits = false
 
     /**
      * Construct a new instance of the Ec2Manager class, oriented for a specific region with a specific user.
      *
      *  @param script Jenkins Pipeline Script context
      *  @param region AWS region in which all operations will be executed
-     *  @param credentialsId Jenkins defined AWS credentials ID
      */
-    Ec2Manager(Script script, String region, String credentialsId) {
-        super(script, region, credentialsId)
+    Ec2Manager(Script script, String region) {
+        super(script, region)
     }
 
     /**
@@ -35,11 +34,10 @@ class Ec2Manager extends AwsService implements Serializable {
      *
      *  @param script Jenkins Pipeline Script context
      *  @param region AWS region in which all operations will be executed
-     *  @param credentialsId Jenkins defined AWS credentials ID
      *  @return New instance of the Ec2Manager initialized with the given parameters
      */
-    static Ec2Manager create(Script script, String region, String credentialsId) {
-        return new Ec2Manager(script, region, credentialsId)
+    static Ec2Manager create(Script script, String region) {
+        return new Ec2Manager(script, region)
     }
 
     /**
@@ -47,7 +45,7 @@ class Ec2Manager extends AwsService implements Serializable {
      * <strong>This name will be used in the AWS CLI as the execution command</strong>
      */
     @Override
-    public String getServiceName() {
+    String getServiceName() {
         return SERVICE_NAME;
     }
 
@@ -136,7 +134,7 @@ class Ec2Manager extends AwsService implements Serializable {
 
         // Create the tags argument
         tags.Name = name
-        String tagsList = tags.collect { /$it.key="$it.value"/ }.join ','
+        String tagsList = tags.collect { /$it.key="$it.value"/ }.join(',')
         String tagsCommand = "'ResourceType=instance,Tags=[$tagsList]' 'ResourceType=volume,Tags=[$tagsList]'"
 
         // Set the T2/T3 Cpu Credits for relevant types

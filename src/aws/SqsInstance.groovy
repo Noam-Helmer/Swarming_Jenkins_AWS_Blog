@@ -22,11 +22,10 @@ class SqsInstance extends AwsService implements Serializable {
      *
      * @param script Jenkins Pipeline Script context
      * @param region AWS region in which all operations will be executed
-     * @param credentialsId Jenkins defined AWS credentials ID
      * @param queueUrl URL of the queue on which all operations will be executed
      */
-    SqsInstance(Script script, String region, String credentialId, String queueUrl) {
-        super(script, region, credentialId)
+    SqsInstance(Script script, String region, String queueUrl) {
+        super(script, region)
         assert queueUrl: "The queue URL cannot be empty"
         this.queueUrl = queueUrl
     }
@@ -36,12 +35,11 @@ class SqsInstance extends AwsService implements Serializable {
      *
      *  @param script Jenkins Pipeline Script context
      *  @param region AWS region in which all operations will be executed
-     *  @param credentialsId Jenkins defined AWS credentials ID
      *  @param queueUrl URL of the queue on which all operations will be executed
      *  @return New instance of the SqsManager initialized with the given parameters
      */
-    static SqsInstance create(Script script, String region, String credentialsId, String queueUrl) {
-        return new SqsInstance(script, region, credentialsId, queueUrl)
+    static SqsInstance create(Script script, String region, String queueUrl) {
+        return new SqsInstance(script, region, queueUrl)
     }
 
     /**
@@ -49,7 +47,7 @@ class SqsInstance extends AwsService implements Serializable {
      * <strong>This name will be used in the AWS CLI as the execution command</strong>
      */
     @Override
-    public String getServiceName() {
+    String getServiceName() {
         return SERVICE_NAME;
     }
 

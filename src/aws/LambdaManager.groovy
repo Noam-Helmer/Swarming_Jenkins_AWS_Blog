@@ -16,10 +16,9 @@ class LambdaManager extends AwsService implements Serializable {
      *
      * @param script Jenkins Pipeline Script context
      * @param region AWS region in which all operations will be executed
-     * @param credentialsId Jenkins defined AWS credentials ID - User should have Full Lambda permissions
      */
-    LambdaManager(Script script, String region, String credentialId) {
-        super(script, region, credentialId)
+    LambdaManager(Script script, String region) {
+        super(script, region)
     }
 
     /**
@@ -27,11 +26,10 @@ class LambdaManager extends AwsService implements Serializable {
      *
      *  @param script Jenkins Pipeline Script context
      *  @param region AWS region in which all operations will be executed
-     *  @param credentialsId Jenkins defined AWS credentials ID
      *  @return New instance of the LambdaManager initialized with the given parameters
      */
-    static LambdaManager create(Script script, String region, String credentialsId) {
-        return new LambdaManager(script, region, credentialsId)
+    static LambdaManager create(Script script, String region) {
+        return new LambdaManager(script, region)
     }
 
     /**
@@ -39,7 +37,7 @@ class LambdaManager extends AwsService implements Serializable {
      * <strong>This name will be used in the AWS CLI as the execution command</strong>
      */
     @Override
-    public String getServiceName() {
+    String getServiceName() {
         return SERVICE_NAME;
     }
 
@@ -67,7 +65,7 @@ class LambdaManager extends AwsService implements Serializable {
                     "Function Name/ARN: ${functionName ?: 'All'}\nEvent Source ARN: ${eventSourceArn ?: 'ALL'}"
         }
         else {
-            println "Retrieving all event source mappings in the ${this.region} region"
+            println "Retrieving all event source mappings in the ${region} region"
         }
 
         // Retrieve the mappings

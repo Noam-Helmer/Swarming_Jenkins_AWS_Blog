@@ -18,13 +18,6 @@ abstract class AwsService implements Serializable {
     protected final String region
 
     /**
-     * Jenkins defined AWS credentials ID.
-     * Given credentials must have the proper access rights for executing all needed operations.
-     * <strong>Required value, may not be null!</strong>
-     */
-    protected final String credentialsId
-
-    /**
      * Supported AWS regions
      */
     final static List awsRegions = ['us-east-2', 'us-east-1','us-west-1', 'us-east-1','us-west-2', 'us-east-1','ap-east-1', 'ap-south-1',
@@ -36,16 +29,12 @@ abstract class AwsService implements Serializable {
      *
      *  @param script Jenkins Pipeline Script context
      *  @param region AWS region in which all operations will be executed
-     *  @param credentialsId Jenkins defined AWS credentials ID
      */
-    AwsService(Script script, String region, String credentialsId) {
+    AwsService(Script script, String region) {
         assert script: "The script parameter cannot be empty"
         assert region in awsRegions : "Region parameter has an invalid value: $region\nSuported regions are: $awsRegions"
-        assert credentialsId: "CredentialsId parameter cannot be empty"
-
         this.script = script
         this.region = region
-        this.credentialsId = credentialsId
     }
 
     /**
@@ -62,7 +51,7 @@ abstract class AwsService implements Serializable {
      */
     String runApiCommand(String command, String args) {
         assert command : "The 'command' parameter Cannot be empty"
-        script.withAWS(region: region, credentials: credentialsId) {
+        script.withAWS(region: region) {
             return script.sh(script: "aws $serviceName $command $args",
                              label: "${serviceName.toUpperCase()}: $command", returnStdout: true)
         }
